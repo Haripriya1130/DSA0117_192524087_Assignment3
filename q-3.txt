@@ -1,0 +1,95 @@
+
+#include <iostream>
+using namespace std;
+
+class Event {
+    int rows, seats;
+    char** seatMap;
+
+public:
+    Event(int r, int s) : rows(r), seats(s) {
+        seatMap = new char*[rows];
+
+        for (int i = 0; i < rows; i++) {
+            seatMap[i] = new char[seats];
+
+            for (int j = 0; j < seats; j++)
+                seatMap[i][j] = 'O';
+        }
+
+        cout << "Event created\n";
+    }
+
+    void bookSeat(int r, int s) {
+        if (r >= 0 && r < rows && s >= 0 && s < seats) {
+            if (seatMap[r][s] == 'O') {
+                seatMap[r][s] = 'X';
+                cout << "Seat booked\n";
+            }
+            else {
+                cout << "Seat already booked\n";
+            }
+        }
+        else {
+            cout << "Invalid seat\n";
+        }
+    }
+
+    void cancelSeat(int r, int s) {
+        if (r >= 0 && r < rows && s >= 0 && s < seats) {
+            if (seatMap[r][s] == 'X') {
+                seatMap[r][s] = 'O';
+                cout << "Booking cancelled\n";
+            }
+            else {
+                cout << "Seat is not booked\n";
+            }
+        }
+        else {
+            cout << "Invalid seat\n";
+        }
+    }
+
+    void display() const {
+        cout << "\nSeat Map:\n";
+
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < seats; j++)
+                cout << seatMap[i][j] << " ";
+            cout << endl;
+        }
+    }
+
+    ~Event() {
+        for (int i = 0; i < rows; i++)
+            delete[] seatMap[i];
+
+        delete[] seatMap;
+
+        cout << "Event closed. Memory released.\n";
+    }
+};
+
+int main() {
+    cout << "Stack Object:\n";
+    Event e1(2, 3);
+    e1.bookSeat(0, 1);
+    e1.display();
+
+    cout << "\nBlock Object:\n";
+    {
+        Event e2(2, 2);
+        e2.bookSeat(1, 1);
+        e2.display();
+    }
+
+    cout << "\nDynamic Object:\n";
+    Event* e3 = new Event(3, 3);
+    e3->bookSeat(0, 0);
+    e3->cancelSeat(0, 0);
+    e3->display();
+
+    delete e3;
+
+    return 0;
+}

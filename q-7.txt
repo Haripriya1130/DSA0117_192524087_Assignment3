@@ -1,0 +1,126 @@
+
+#include <iostream>
+#include <cmath>
+#include <stdexcept>
+using namespace std;
+
+class Complex {
+    double real, imag;
+
+public:
+    Complex() : real(0), imag(0) {}
+
+    Complex(double r) : real(r), imag(0) {}
+
+    Complex(double r, double i) : real(r), imag(i) {}
+
+    Complex operator+(const Complex& c) const {
+        return Complex(real + c.real, imag + c.imag);
+    }
+
+    Complex operator-(const Complex& c) const {
+        return Complex(real - c.real, imag - c.imag);
+    }
+
+    Complex operator*(const Complex& c) const {
+        return Complex(
+            real * c.real - imag * c.imag,
+            real * c.imag + imag * c.real
+        );
+    }
+
+    Complex operator/(const Complex& c) const {
+        double denominator =
+            c.real * c.real + c.imag * c.imag;
+
+        if (denominator == 0)
+            throw runtime_error("Division by zero impedance");
+
+        return Complex(
+            (real * c.real + imag * c.imag) / denominator,
+            (imag * c.real - real * c.imag) / denominator
+        );
+    }
+
+    bool operator==(const Complex& c) const {
+        return real == c.real && imag == c.imag;
+    }
+
+    double magnitude() const {
+        return sqrt(real * real + imag * imag);
+    }
+
+    friend ostream& operator<<(ostream& out, const Complex& c) {
+        out << c.real;
+
+        if (c.imag >= 0)
+            out << " + j" << c.imag;
+        else
+            out << " - j" << -c.imag;
+
+        return out;
+    }
+};
+
+int main() {
+    try {
+        double R, L, C, frequency;
+
+        cout << "Enter Resistance (R): ";
+        cin >> R;
+
+        cout << "Enter Inductance (L): ";
+        cin >> L;
+
+        cout << "Enter Capacitance (C): ";
+        cin >> C;
+
+        cout << "Enter Frequency (Hz): ";
+        cin >> frequency;
+
+        if (R < 0 || L < 0 || C <= 0 || frequency <= 0)
+            throw invalid_argument("Invalid circuit values");
+
+        const double PI = acos(-1.0);
+        double omega = 2 * PI * frequency;
+
+        // Individual Impedances
+        Complex ZR(R, 0);
+        Complex ZL(0, omega * L);
+        Complex ZC(0, -1.0 / (omega * C));
+
+        cout << "\nResistor Impedance: " << ZR << endl;
+        cout << "Inductor Impedance: " << ZL << endl;
+        cout << "Capacitor Impedance: " << ZC << endl;
+
+        // Series RLC
+        Complex Zseries = ZR + ZL + ZC;
+
+        cout << "\nSeries Impedance: " << Zseries << endl;
+        cout << "Series Magnitude: "
+             << Zseries.magnitude() << endl;
+
+        // Parallel RLC
+        Complex numerator = ZR * ZL * ZC;
+        Complex denominator = (ZR * ZL) + (ZL * ZC) + (ZC * ZR);
+
+        Complex Zparallel = numerator / denominator;
+
+        cout << "\nParallel Impedance: " << Zparallel << endl;
+        cout << "Parallel Magnitude: "
+             << Zparallel.magnitude() << endl;
+
+        // Division by zero test
+        Complex zero(0, 0);
+        Complex test(10, 5);
+
+        cout << "\nDivision by Zero Test:\n";
+        Complex result = test / zero;
+        cout << result << endl;
+    }
+    catch (const exception& e) {
+        cout << "Error: " << e.what() << endl;
+    }
+
+    return 0;
+}
